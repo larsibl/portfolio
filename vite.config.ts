@@ -1,9 +1,27 @@
-import { sveltekit } from "@sveltejs/kit/vite";
-import { defineConfig } from "vitest/config";
+import adapter from '@sveltejs/adapter-static';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+
+const dev = process.argv.includes('dev');
 
 export default defineConfig({
-  plugins: [sveltekit()],
-  test: {
-    include: ["src/**/*.{test,spec}.{js,ts}"],
-  },
+	plugins: [
+		sveltekit({
+			compilerOptions: {
+				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
+				runes: ({ filename }) =>
+					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
+			},
+			adapter: adapter({
+				pages: 'build',
+				assets: 'build',
+				// Replaces GitHub Pages' default 404 page with the app's error page
+				fallback: '404.html'
+			}),
+			paths: {
+				// GitHub Pages serves project sites from /<repo-name>. Use '' if you add a custom domain.
+				base: dev ? '' : '/portfolio'
+			}
+		})
+	]
 });
